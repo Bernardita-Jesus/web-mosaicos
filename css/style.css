@@ -1,170 +1,240 @@
-:root{
-  --bg: #fdf6dc;
-  --panel: #fffdf3;
-  --panel-line: #f0e3ad;
-  --amber: #f0c94a;
-  --amber-dim: #f6e6a8;
-  --amber-text: #4a3c12;
-  --text: #4a3f28;
-  --text-dim: #96895f;
+/* Distribución tomada de "Cada espacio de mí es un poema":
+   a la izquierda el panel (título, pasos numerados en franjas y la firma),
+   a la derecha el resultado en grande dentro de un recuadro con esquinas. */
+
+:root {
+  --stage: #f1f5f2;        /* fondo del lado derecho y de los recuadros */
+  --panel: #e2ede8;        /* panel izquierdo, verde agua opaco */
+  --line: #c9ddd5;         /* líneas entre franjas */
+  --accent: #86b8a6;       /* botones y controles */
+  --accent-strong: #4f7f6f;/* título, número del paso activo */
+  --accent-dim: #c9ddd5;
+  --accent-text: #1f3d33;
+  --text: #34443d;
+  --text-dim: #6f857c;
 }
+
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
 html, body {
-  margin: 0; padding: 0;
-  background: var(--bg);
+  margin: 0; padding: 0; height: 100%;
+  background: var(--stage);
   color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  height: 100%;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
-.wrap {
-  display: grid;
-  grid-template-columns: 420px 1fr;
-  min-height: 100vh;
-}
-@media (max-width: 820px) {
-  .wrap { grid-template-columns: 1fr; }
-}
-.panel {
+
+/* La página: a la izquierda el panel, a la derecha el mosaico */
+#app { display: flex; width: 100vw; height: 100vh; }
+
+#panel {
+  width: 30%; min-width: 340px; max-width: 460px; flex-shrink: 0;
   background: var(--panel);
-  border-right: 1px solid var(--panel-line);
-  padding: 36px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
+  border-right: 1px solid var(--line);
+  padding: 20px;
+  display: flex; flex-direction: column;
+  overflow-y: auto; /* si no cabe todo, el panel hace scroll */
 }
-h1 {
-  font-family: 'Source Serif 4', serif;
-  font-weight: 600;
-  font-size: 28px;
-  line-height: 1.15;
-  margin: 0 0 4px 0;
+#panel > * { flex-shrink: 0; }
+
+.col { display: flex; flex-direction: column; }
+#colTitle { padding-bottom: 12px; gap: 6px; }
+#title {
+  white-space: nowrap;
+  font-size: 23px; font-weight: 600; line-height: 1.25; margin: 0;
+  color: var(--accent-strong);
 }
-.sub {
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
+#subtitle { margin: 0; font-size: 12px; line-height: 1.45; color: var(--accent-strong); }
+
+/* Cada paso es una franja de borde a borde del panel:
+   el título arriba y sus controles debajo */
+.step-card {
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  margin: 0 -20px; padding: 10px 20px 12px;
+  border-top: 1px solid var(--line);
+  transition: background .3s;
 }
-.field { display: flex; flex-direction: column; gap: 8px; }
-.field label {
-  font-size: 13px;
-  color: var(--text-dim);
+.step-card:focus-within,
+.step-card:hover { background: rgba(79, 127, 111, .08); }
+.step-card:focus-within .field-label { color: var(--accent-strong); }
+.step-card:focus-within .step-num { background: var(--accent-strong); color: #fff; }
+
+.field-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 600; line-height: 1.2;
+  color: #555;
 }
+.step-num {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent-dim); color: var(--accent-text);
+  font-size: 11px;
+  transition: background .3s, color .3s;
+}
+.step-body { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+
+/* Al final del panel, la firma de la web */
+#credit {
+  margin: auto -20px -20px; padding: 18px 20px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--accent-strong);
+}
+
+/* ---------- Controles ---------- */
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; color: var(--text-dim); }
+.rangeval { color: var(--text); font-variant-numeric: tabular-nums; }
+.hint { margin: 0; font-size: 11px; line-height: 1.4; color: var(--text-dim); }
+.count { font-size: 11px; color: var(--text-dim); }
+
+input[type=range] { width: 100%; accent-color: var(--accent-strong); }
+select {
+  width: 100%;
+  background: var(--stage); color: var(--text);
+  border: 1px solid var(--line); border-radius: 5px;
+  padding: 8px 10px; font: inherit; font-size: 12px;
+}
+
+.checkbox-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text) !important; cursor: pointer;
+}
+.checkbox-label input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent-strong); }
+
+button { font-family: inherit; cursor: pointer; }
+.primary-btn {
+  display: block; width: 100%; text-align: center;
+  padding: 10px 14px; background: var(--accent-strong); color: #fff;
+  border: none; border-radius: 5px; font-size: 12px; font-weight: 600;
+}
+.primary-btn:hover:not(:disabled) { background: #3d6658; }
+.primary-btn:disabled { opacity: .4; cursor: not-allowed; }
+.toggle-btn {
+  padding: 8px 10px;
+  background: var(--accent-dim); border: 1px solid var(--accent-dim);
+  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--accent-text);
+  transition: border-color .15s;
+}
+.toggle-btn:hover:not(:disabled) { border-color: var(--accent-strong); }
+.toggle-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------- Subir fotos ---------- */
 .dropzone {
-  border: 1px dashed var(--panel-line);
-  border-radius: 4px;
-  padding: 22px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-dim);
+  padding: 10px 12px;
+  text-align: center; font-size: 11px; line-height: 1.4; color: var(--accent-text);
+  background: var(--accent-dim); border: 1px dashed var(--accent);
+  border-radius: 5px;
   cursor: pointer;
-  transition: border-color .15s ease, color .15s ease;
-}
-.dropzone:hover, .dropzone.drag {
-  border-color: var(--amber);
-  color: var(--text);
+  transition: border-color .15s, background .15s;
 }
 .dropzone input { display: none; }
-.thumbrow {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 4px;
+.dropzone:hover, .dropzone.drag { border-color: var(--accent-strong); background: var(--stage); }
+.dropzone:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+
+.photos-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.thumbrow { display: contents; } /* las miniaturas siguen al botón en la misma fila */
+.add-btn {
+  height: 40px; padding: 0 10px;
+  background: var(--accent-dim); border: 1px solid var(--accent-dim);
+  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--accent-text);
+  transition: border-color .15s;
+}
+.add-btn:hover { border-color: var(--accent-strong); }
+.add-btn:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thumbrow .thumb {
+  position: relative; padding: 0; border: 0; background: none;
+  border-radius: 3px; line-height: 0;
 }
 .thumbrow img {
-  width: 40px; height: 40px;
-  object-fit: cover;
+  width: 40px; height: 40px; object-fit: cover;
+  border-radius: 3px; border: 1px solid var(--line);
+}
+.thumbrow .thumb::after {
+  content: '×';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
   border-radius: 3px;
-  border: 1px solid var(--panel-line);
+  background: rgba(31, 61, 51, .55); color: #fff;
+  font-size: 20px; line-height: 1;
+  opacity: 0; transition: opacity .15s ease;
 }
-select, input[type=range] {
-  width: 100%;
-}
-select {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--panel-line);
-  border-radius: 4px;
-  padding: 9px 10px;
-  font-family: inherit;
-  font-size: 14px;
-}
-input[type=range] {
-  accent-color: var(--amber);
-}
-.rangeval {
-  font-size: 13px;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-button {
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 4px;
-  padding: 12px 16px;
+.thumbrow .thumb:hover::after,
+.thumbrow .thumb:focus-visible::after { opacity: 1; }
+.thumbrow .thumb:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+
+/* Formatos como dibujos */
+.formats { display: flex; gap: 6px; }
+.fmt {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  gap: 6px; padding: 10px 2px 8px;
+  border: 1px solid var(--line); border-radius: 5px;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: background .15s ease, opacity .15s ease;
+  transition: border-color .15s, background .15s;
 }
-button.primary {
-  background: var(--amber);
-  color: var(--amber-text);
+.fmt input { position: absolute; opacity: 0; pointer-events: none; }
+.fmt .shape {
+  display: block;
+  border: 1.5px solid var(--text-dim); border-radius: 3px;
+  transition: border-color .15s, background .15s;
 }
-button.primary:disabled {
-  background: var(--amber-dim);
-  color: #c2b47e;
-  cursor: not-allowed;
+.fmt .ratio { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.fmt:hover { border-color: var(--accent-strong); }
+.fmt:has(input:checked) { border-color: var(--accent-strong); background: var(--stage); }
+.fmt:has(input:checked) .shape { border-color: var(--accent-text); background: var(--accent); }
+.fmt:has(input:checked) .ratio { color: var(--text); }
+.fmt:has(input:focus-visible) { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+
+/* Orden como dibujos: una tirita de recortes con el degradé de cada orden */
+.swatch {
+  display: block; width: 44px; height: 26px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, .08);
 }
-button.secondary {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--panel-line);
+.sw-brightness {
+  background: linear-gradient(90deg, #eef5f2 0 20%, #c4dcd3 20% 40%, #8fb8aa 40% 60%, #5a8a7b 60% 80%, #2f5248 80%);
 }
-button.secondary:disabled {
-  color: var(--text-dim);
-  cursor: not-allowed;
+.sw-hue {
+  background: linear-gradient(90deg, #9fcfc0 0 20%, #86bcc0 20% 40%, #7fa9c4 40% 60%, #8b9cc6 60% 80%, #a3a0c9 80%);
 }
+.sw-saturation {
+  background: linear-gradient(90deg, #4fa894 0 20%, #6fae9e 20% 40%, #8fb3a9 40% 60%, #aab9b4 60% 80%, #bcc2c0 80%);
+}
+.sw-hue-bright {
+  background:
+    linear-gradient(90deg, #cfe8df 0 20%, #c4e0e2 20% 40%, #c1d6e6 40% 60%, #c8cfe8 60% 80%, #d4d2e8 80%) top / 100% 50% no-repeat,
+    linear-gradient(90deg, #4f8f7d 0 20%, #427f86 20% 40%, #3f6d8f 40% 60%, #4c5d91 60% 80%, #615b8f 80%) bottom / 100% 50% no-repeat;
+}
+.sort-opt .ratio { white-space: nowrap; }
+.sort-opt:has(input:checked) .swatch { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+
+/* ---------- Lado derecho: el mosaico ---------- */
 .stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 36px;
-  min-height: 100vh;
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px;
+  background: var(--stage);
 }
-#canvas-holder {
-  box-shadow: 0 30px 60px -25px rgba(150, 125, 40, .3);
-  line-height: 0;
-  background: #ffffff;
-}
+.frame { display: flex; align-items: center; justify-content: center; }
+#canvas-holder canvas { box-shadow: 0 20px 50px -25px rgba(60, 100, 85, .35); }
+#canvas-holder { line-height: 0; }
 #canvas-holder canvas {
   display: block;
-  max-width: 100%;
-  height: auto;
-  border-radius: 2px;
+  max-width: calc(100vw - max(340px, 30vw) - 80px);
+  max-height: calc(100vh - 80px);
+  width: auto; height: auto;
 }
+#canvas-holder:not(:empty) + .placeholder { display: none; }
 .placeholder {
-  color: var(--text-dim);
-  font-size: 14px;
-  text-align: center;
-  max-width: 320px;
-  line-height: 1.6;
+  font-size: 13px; color: var(--text-dim); text-align: center; padding: 20px;
 }
-.checkbox-field { flex-direction: row; }
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text);
-  cursor: pointer;
-}
-.checkbox-label input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--amber);
-}
-.count {
-  font-size: 13px;
-  color: var(--text-dim);
+
+/* ---------- Teléfono: el panel arriba y el mosaico debajo ---------- */
+@media (max-width: 760px) {
+  html, body { overflow: auto; height: auto; }
+  #app { flex-direction: column; width: 100%; height: auto; }
+  #panel { width: 100%; max-width: none; min-width: 0; border-right: none; overflow: visible; }
+  .stage { padding: 30px 20px 40px; border-top: 1px solid var(--line); }
+  #canvas-holder canvas { max-width: calc(100vw - 60px); max-height: 80vh; }
 }
