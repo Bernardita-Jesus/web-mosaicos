@@ -515,7 +515,7 @@ stepCards.forEach(card => {
     a.x < b.x + b.w + GAP && a.x + a.w + GAP > b.x &&
     a.y < b.y + b.h + GAP && a.y + a.h + GAP > b.y;
 
-  function spawn() {
+  function spawn(instant = false) {
     if (squares.length >= MAX) return;
     const W = frame.clientWidth, H = frame.clientHeight;
     const busy = busyRect();
@@ -549,7 +549,14 @@ stepCards.forEach(card => {
       deco.appendChild(el);
       const sq = { el, ...cand };
       squares.push(sq);
-      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-in')));
+      if (instant) {
+        // Ya visible desde que carga la página, sin fundido de entrada
+        el.style.transition = 'none';
+        el.classList.add('is-in');
+        requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = ''; }));
+      } else {
+        requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-in')));
+      }
 
       if (!reduceMotion) {
         // Cada cuadrado se queda un rato y luego se desvanece
@@ -578,10 +585,10 @@ stepCards.forEach(card => {
   });
 
   if (reduceMotion) {
-    for (let i = 0; i < MAX; i++) spawn();
+    for (let i = 0; i < MAX; i++) spawn(true);
   } else {
-    // Al cargar, la franja ya parte con algunos cuadrados puestos
-    for (let i = 0; i < 25; i++) spawn();
+    // Al cargar, la franja ya parte con cuadrados puestos
+    for (let i = 0; i < 40; i++) spawn(true);
     setInterval(() => { if (!document.hidden) spawn(); }, 350);
   }
 })();
