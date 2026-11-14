@@ -41,9 +41,15 @@ const jitterSlider = document.getElementById('jitter');
 const jitterVal = document.getElementById('jitterVal');
 
 function toggleVariable(checkbox, fixedEl, varEl) {
+  // Los dos grupos siempre se ven; el que no se está usando queda
+  // semitransparente y desactivado.
+  const setOff = (el, off) => {
+    el.classList.toggle('is-off', off);
+    el.querySelectorAll('input').forEach(i => { i.disabled = off; });
+  };
   const update = () => {
-    fixedEl.hidden = checkbox.checked;
-    varEl.hidden = !checkbox.checked;
+    setOff(fixedEl, checkbox.checked);
+    setOff(varEl, !checkbox.checked);
   };
   checkbox.addEventListener('change', update);
   update();
@@ -211,7 +217,7 @@ processBtn.addEventListener('click', () => {
   scheduleBuild(0);
 });
 
-document.querySelectorAll('.panel input, .panel select').forEach(el => {
+document.querySelectorAll('#app input, #app select').forEach(el => {
   if (el.type === 'file') return;
   el.addEventListener(el.type === 'range' ? 'input' : 'change', () => scheduleBuild());
 });

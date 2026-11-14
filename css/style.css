@@ -85,6 +85,10 @@ html, body {
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; color: var(--text-dim); }
 .rangeval { color: var(--text); font-variant-numeric: tabular-nums; }
+/* Controles que no se están usando: se ven, pero semitransparentes */
+.is-off { opacity: .4; transition: opacity .2s; }
+.is-off, .is-off * { cursor: not-allowed; }
+.var-controls { padding-left: 24px; } /* debajo de su casilla, un poco hacia adentro */
 .hint { margin: 0; font-size: 11px; line-height: 1.4; color: var(--text-dim); }
 .count { font-size: 11px; color: var(--text-dim); }
 
@@ -209,20 +213,37 @@ button { font-family: inherit; cursor: pointer; }
 .sort-opt .ratio { white-space: nowrap; }
 .sort-opt:has(input:checked) .swatch { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 
-/* ---------- Lado derecho: el mosaico ---------- */
+/* ---------- Lado derecho: arriba el orden, debajo el mosaico ---------- */
 .stage {
   flex: 1; min-width: 0;
-  display: flex; align-items: center; justify-content: center;
-  padding: 40px;
+  display: flex; flex-direction: column;
   background: var(--stage);
 }
-.frame { display: flex; align-items: center; justify-content: center; }
-#canvas-holder canvas { box-shadow: 0 20px 50px -25px rgba(60, 100, 85, .35); }
+/* Barra del orden, a la altura del título del panel */
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 28px;
+  padding: 20px 28px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.tool { display: flex; flex-direction: column; gap: 6px; }
+.tool-label { font-size: 12px; color: var(--text-dim); }
+.sort-row { gap: 6px; }
+.sort-row .fmt { flex: 0 0 auto; width: 76px; }
+.tool-jitter { width: 200px; }
+.tool-jitter .toggle-btn { margin-top: 4px; }
+.tool-save { margin-left: auto; } /* al final de la barra, a la derecha */
+.tool-save .primary-btn { width: auto; padding: 10px 18px; }
+.frame {
+  flex: 1; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 28px;
+}
 #canvas-holder { line-height: 0; }
 #canvas-holder canvas {
   display: block;
-  max-width: calc(100vw - max(340px, 30vw) - 80px);
-  max-height: calc(100vh - 80px);
+  max-width: calc(100vw - max(340px, 30vw) - 56px);
+  max-height: calc(100vh - 170px);
+  box-shadow: 0 20px 50px -25px rgba(60, 100, 85, .35);
   width: auto; height: auto;
 }
 #canvas-holder:not(:empty) + .placeholder { display: none; }
@@ -235,6 +256,8 @@ button { font-family: inherit; cursor: pointer; }
   html, body { overflow: auto; height: auto; }
   #app { flex-direction: column; width: 100%; height: auto; }
   #panel { width: 100%; max-width: none; min-width: 0; border-right: none; overflow: visible; }
-  .stage { padding: 30px 20px 40px; border-top: 1px solid var(--line); }
+  .stage { border-top: 1px solid var(--line); }
+  .toolbar { padding: 16px 20px 12px; }
+  .frame { padding: 24px 20px 36px; }
   #canvas-holder canvas { max-width: calc(100vw - 60px); max-height: 80vh; }
 }

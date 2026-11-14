@@ -74,16 +74,16 @@
             <label>Ancho: <span class="rangeval" id="tileWVal">120</span> px</label>
             <input type="range" id="tileW" min="0" max="0" value="0" step="1">
           </div>
-          <div id="varWControls" class="field" hidden>
+          <label class="checkbox-label">
+            <input type="checkbox" id="variableW">
+            Anchos variados
+          </label>
+          <div id="varWControls" class="field var-controls">
             <label>Ancho mínimo: <span class="rangeval" id="minWidthVal">36</span> px</label>
             <input type="range" id="minWidth" min="20" max="90" value="36" step="2">
             <label>Ancho máximo: <span class="rangeval" id="maxWidthVal">160</span> px</label>
             <input type="range" id="maxWidth" min="100" max="300" value="160" step="2">
           </div>
-          <label class="checkbox-label">
-            <input type="checkbox" id="variableW">
-            Anchos variados
-          </label>
         </div>
 
         <div class="field">
@@ -91,71 +91,61 @@
             <label>Alto: <span class="rangeval" id="tileHVal">120</span> px</label>
             <input type="range" id="tileH" min="0" max="0" value="0" step="1">
           </div>
-          <div id="varHControls" class="field" hidden>
+          <label class="checkbox-label">
+            <input type="checkbox" id="variableH">
+            Altos variados
+          </label>
+          <div id="varHControls" class="field var-controls">
             <label>Alto mínimo: <span class="rangeval" id="minHeightVal">36</span> px</label>
             <input type="range" id="minHeight" min="20" max="90" value="36" step="2">
             <label>Alto máximo: <span class="rangeval" id="maxHeightVal">160</span> px</label>
             <input type="range" id="maxHeight" min="100" max="300" value="160" step="2">
           </div>
-          <label class="checkbox-label">
-            <input type="checkbox" id="variableH">
-            Altos variados
-          </label>
         </div>
         <p class="hint">Las medidas calzan exacto con el formato: ningún recorte queda cortado.</p>
-      </div>
-    </section>
-
-    <!-- 4. Orden -->
-    <section class="step-card">
-      <div class="field-label"><span class="step-num">4</span>Orden</div>
-      <div class="step-body">
-        <div class="field">
-          <label>Ordenar por</label>
-          <div class="formats" id="sortMode" role="radiogroup" aria-label="Ordenar por">
-            <label class="fmt sort-opt" title="Brillo: de claro a oscuro">
-              <input type="radio" name="sort" value="brightness" checked>
-              <span class="swatch sw-brightness"></span>
-              <span class="ratio">Brillo</span>
-            </label>
-            <label class="fmt sort-opt" title="Tono: como un arcoíris">
-              <input type="radio" name="sort" value="hue">
-              <span class="swatch sw-hue"></span>
-              <span class="ratio">Tono</span>
-            </label>
-            <label class="fmt sort-opt" title="Saturación: de vivo a gris">
-              <input type="radio" name="sort" value="saturation">
-              <span class="swatch sw-saturation"></span>
-              <span class="ratio">Saturación</span>
-            </label>
-            <label class="fmt sort-opt" title="Tono, luego brillo">
-              <input type="radio" name="sort" value="hue-bright">
-              <span class="swatch sw-hue-bright"></span>
-              <span class="ratio">Tono + brillo</span>
-            </label>
-          </div>
-        </div>
-        <div class="field">
-          <label>Aleatoriedad: <span class="rangeval" id="jitterVal">35</span>%</label>
-          <input type="range" id="jitter" min="0" max="100" value="35" step="1">
-        </div>
-        <button class="toggle-btn" id="processBtn" disabled>Mezclar de nuevo</button>
-      </div>
-    </section>
-
-    <!-- 5. Guardar -->
-    <section class="step-card">
-      <div class="field-label"><span class="step-num">5</span>Guardar</div>
-      <div class="step-body">
-        <button class="primary-btn" id="downloadBtn" disabled>Descargar imagen</button>
       </div>
     </section>
 
     <div id="credit">Web creada por <strong>Bernardita Jesús</strong></div>
   </div>
 
-  <!-- Lado derecho: el mosaico -->
+  <!-- Lado derecho: arriba el orden (lo principal), debajo el mosaico -->
   <div id="below" class="stage">
+    <div class="toolbar" id="toolbar">
+      <div class="tool">
+        <span class="tool-label">Ordenar por</span>
+        <div class="formats sort-row" id="sortMode" role="radiogroup" aria-label="Ordenar por">
+          <label class="fmt sort-opt" title="Brillo: de claro a oscuro">
+            <input type="radio" name="sort" value="brightness" checked>
+            <span class="swatch sw-brightness"></span>
+            <span class="ratio">Brillo</span>
+          </label>
+          <label class="fmt sort-opt" title="Tono: como un arcoíris">
+            <input type="radio" name="sort" value="hue">
+            <span class="swatch sw-hue"></span>
+            <span class="ratio">Tono</span>
+          </label>
+          <label class="fmt sort-opt" title="Saturación: de vivo a gris">
+            <input type="radio" name="sort" value="saturation">
+            <span class="swatch sw-saturation"></span>
+            <span class="ratio">Saturación</span>
+          </label>
+          <label class="fmt sort-opt" title="Tono, luego brillo">
+            <input type="radio" name="sort" value="hue-bright">
+            <span class="swatch sw-hue-bright"></span>
+            <span class="ratio">Tono + brillo</span>
+          </label>
+        </div>
+      </div>
+      <div class="tool tool-jitter">
+        <label class="tool-label" for="jitter">Aleatoriedad: <span class="rangeval" id="jitterVal">35</span>%</label>
+        <input type="range" id="jitter" min="0" max="100" value="35" step="1">
+        <button class="toggle-btn" id="processBtn" disabled>Mezclar de nuevo</button>
+      </div>
+      <div class="tool tool-save">
+        <button class="primary-btn" id="downloadBtn" disabled>Guardar imagen</button>
+      </div>
+    </div>
     <div class="frame" id="frame">
       <div id="canvas-holder"></div>
       <span class="placeholder" id="placeholder">Aquí aparecerá tu mosaico</span>
