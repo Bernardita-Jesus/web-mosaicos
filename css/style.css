@@ -24,9 +24,18 @@ html, body {
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
 }
+body { display: flex; flex-direction: column; }
 
-/* La página: a la izquierda el panel, a la derecha el mosaico */
-#app { display: flex; width: 100vw; height: 100vh; }
+/* Arriba, la franja del título de lado a lado */
+#header {
+  flex-shrink: 0; position: relative; overflow: hidden;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 20px;
+}
+
+/* Debajo: a la izquierda el panel, a la derecha el mosaico */
+#app { display: flex; width: 100vw; flex: 1; min-height: 0; }
 
 #panel {
   width: 30%; min-width: 340px; max-width: 460px; flex-shrink: 0;
@@ -37,9 +46,12 @@ html, body {
   overflow-y: auto; /* si no cabe todo, el panel hace scroll */
 }
 #panel > * { flex-shrink: 0; }
+/* El paso 1 parte justo debajo de la franja del título */
+#panel { padding-top: 0; }
+#panel > .step-card:first-child { border-top: none; }
 
 .col { display: flex; flex-direction: column; }
-#colTitle { padding-bottom: 12px; gap: 6px; }
+#colTitle { position: relative; z-index: 1; width: max-content; max-width: 560px; gap: 6px; }
 #title {
   white-space: nowrap;
   font-size: 23px; font-weight: 600; line-height: 1.25; margin: 0;
@@ -50,11 +62,20 @@ html, body {
 /* Cada paso es una franja de borde a borde del panel:
    el título arriba y sus controles debajo */
 .step-card {
-  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-  margin: 0 -20px; padding: 10px 20px 12px;
+  /* Los pasos se reparten el alto libre del panel, con su contenido al centro */
+  flex: 1 0 auto;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 6px;
+  margin: 0 -20px; padding: 8px 20px 10px;
   border-top: 1px solid var(--line);
-  transition: background .3s;
+  cursor: pointer;
+  transition: background .3s, padding .3s;
 }
+/* Los pasos se ven siempre, pero en chico; el seleccionado a tamaño normal */
+.step-card .step-body { zoom: .6; transition: zoom .3s; }
+.step-card.is-open { padding: 10px 20px 12px; gap: 8px; cursor: default; }
+.step-card.is-open .step-body { zoom: 1; }
+.step-card.is-open .field-label { color: var(--accent-strong); }
+.step-card.is-open .step-num { background: var(--accent-strong); color: #fff; }
 .step-card:focus-within,
 .step-card:hover { background: rgba(79, 127, 111, .08); }
 .step-card:focus-within .field-label { color: var(--accent-strong); }
@@ -73,6 +94,9 @@ html, body {
   transition: background .3s, color .3s;
 }
 .step-body { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+
+/* Botón de guardar, sin número ni título */
+.save-row { margin: 0 -20px; padding: 28px 20px 24px; border-top: 1px solid var(--line); }
 
 /* Al final del panel, la firma de la web */
 #credit {
@@ -213,36 +237,35 @@ button { font-family: inherit; cursor: pointer; }
 .sort-opt .ratio { white-space: nowrap; }
 .sort-opt:has(input:checked) .swatch { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 
-/* ---------- Lado derecho: arriba el orden, debajo el mosaico ---------- */
+/* ---------- Lado derecho: el mosaico ---------- */
 .stage {
   flex: 1; min-width: 0;
-  display: flex; flex-direction: column;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px;
   background: var(--stage);
 }
-/* Barra del orden, a la altura del título del panel */
-.toolbar {
-  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 28px;
-  padding: 20px 28px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.tool { display: flex; flex-direction: column; gap: 6px; }
-.tool-label { font-size: 12px; color: var(--text-dim); }
-.sort-row { gap: 6px; }
-.sort-row .fmt { flex: 0 0 auto; width: 76px; }
-.tool-jitter { width: 200px; }
-.tool-jitter .toggle-btn { margin-top: 4px; }
-.tool-save { margin-left: auto; } /* al final de la barra, a la derecha */
-.tool-save .primary-btn { width: auto; padding: 10px 18px; }
+/* Recuadro en línea segmentada donde aparece el mosaico */
 .frame {
-  flex: 1; min-height: 0;
+  width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  padding: 28px;
+  padding: 20px;
+  border: 2px dashed var(--accent); border-radius: 10px;
 }
+/* Cuadrados con recortes de las fotos que aparecen en la franja del título */
+.deco { position: absolute; inset: 0; pointer-events: none; }
+.deco-sq {
+  position: absolute;
+  background-repeat: no-repeat;
+  box-shadow: 0 6px 14px -8px rgba(60, 100, 85, .45);
+  opacity: 0; transform: scale(.6);
+  transition: opacity .9s ease, transform .9s ease;
+}
+.deco-sq.is-in { opacity: 1; transform: scale(1); }
 #canvas-holder { line-height: 0; }
 #canvas-holder canvas {
   display: block;
-  max-width: calc(100vw - max(340px, 30vw) - 56px);
-  max-height: calc(100vh - 170px);
+  max-width: calc(100vw - max(340px, 30vw) - 124px);
+  max-height: calc(100vh - var(--header-h, 100px) - 124px);
   box-shadow: 0 20px 50px -25px rgba(60, 100, 85, .35);
   width: auto; height: auto;
 }
@@ -256,8 +279,7 @@ button { font-family: inherit; cursor: pointer; }
   html, body { overflow: auto; height: auto; }
   #app { flex-direction: column; width: 100%; height: auto; }
   #panel { width: 100%; max-width: none; min-width: 0; border-right: none; overflow: visible; }
-  .stage { border-top: 1px solid var(--line); }
-  .toolbar { padding: 16px 20px 12px; }
-  .frame { padding: 24px 20px 36px; }
-  #canvas-holder canvas { max-width: calc(100vw - 60px); max-height: 80vh; }
+  .stage { padding: 30px 20px 40px; border-top: 1px solid var(--line); }
+  .frame { height: auto; min-height: 60vh; padding: 16px; }
+  #canvas-holder canvas { max-width: calc(100vw - 76px); max-height: 75vh; }
 }
