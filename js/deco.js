@@ -1,5 +1,5 @@
 // Cuadrados decorativos: recortes de las fotos que van apareciendo en la
-// franja del título, en el espacio libre a la derecha del texto.
+// franja del título, desde donde termina el panel izquierdo hacia la derecha.
 (function decoSquares() {
   // Cada foto con su color promedio, que se ve mientras la imagen carga
   const PHOTOS = [
@@ -9,42 +9,38 @@
   ];
   const frame = document.getElementById('header');
   const deco = document.getElementById('deco');
-  const SIZE = 22;         // lado de cada cuadrado (todos iguales)
+  const SIZE = 34;         // lado de cada cuadrado (todos iguales)
   const GAP = 2;           // separación entre cuadrados y con el título
   const STEP = SIZE + GAP; // paso de la grilla
   const MARGIN = 8;        // distancia al borde del recuadro
-  const SKIP_COLS = 4;     // columnas que quedan vacías junto al título
   const MAX = 60;          // cuántos cuadrados como máximo a la vez
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const squares = [];      // { el, x, y, w, h, key }
 
-  // Lo que está ocupado: el título y su descripción
-  function busyRect() {
-    const el = document.getElementById('colTitle');
-    const f = frame.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    // Toda la altura de la franja, y 4 columnas extra libres a la derecha del título
-    return { x: 0, y: 0, w: r.right - f.left + SKIP_COLS * STEP, h: f.height };
+  // Dónde empiezan los cuadrados: en la línea donde termina el panel izquierdo
+  // (mismo ancho que #panel en css). En celular, a la derecha del título.
+  function startX() {
+    if (window.innerWidth <= 760) {
+      const f = frame.getBoundingClientRect();
+      return document.getElementById('colTitle').getBoundingClientRect().right - f.left + GAP;
+    }
+    return Math.min(600, Math.max(400, window.innerWidth * 0.38));
   }
-  const overlaps = (a, b) =>
-    a.x < b.x + b.w + GAP && a.x + a.w + GAP > b.x &&
-    a.y < b.y + b.h + GAP && a.y + a.h + GAP > b.y;
 
   function spawn(instant = false) {
     if (squares.length >= MAX) return;
     const W = frame.clientWidth, H = frame.clientHeight;
-    const busy = busyRect();
-    // Celdas libres de la grilla: dentro de la franja y fuera del título
-    const cols = Math.floor((W - 2 * MARGIN + GAP) / STEP);
+    // Grilla desde la línea del panel hacia la derecha, centrada en lo alto
+    const ox = startX();
+    const cols = Math.floor((W - ox - MARGIN + GAP) / STEP);
     const rows = Math.floor((H - 2 * MARGIN + GAP) / STEP);
-    const ox = (W - (cols * STEP - GAP)) / 2;   // grilla centrada en la franja
     const oy = (H - (rows * STEP - GAP)) / 2;
     const taken = new Set(squares.map(q => q.key));
     const free = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const cell = { x: ox + c * STEP, y: oy + r * STEP, w: SIZE, h: SIZE, key: c + ',' + r };
-        if (!taken.has(cell.key) && !overlaps(cell, busy)) free.push(cell);
+        if (!taken.has(cell.key)) free.push(cell);
       }
     }
     if (!free.length) return;

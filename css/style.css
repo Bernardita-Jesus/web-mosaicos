@@ -31,14 +31,14 @@ body { display: flex; flex-direction: column; }
   flex-shrink: 0; position: relative; overflow: hidden;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
-  padding: 20px;
+  padding: 36px 28px;
 }
 
 /* Debajo: a la izquierda el panel, a la derecha el mosaico */
 #app { display: flex; width: 100vw; flex: 1; min-height: 0; }
 
 #panel {
-  width: 30%; min-width: 340px; max-width: 460px; flex-shrink: 0;
+  width: 38%; min-width: 400px; max-width: 600px; flex-shrink: 0;
   background: var(--panel);
   border-right: 1px solid var(--line);
   padding: 20px;
@@ -51,45 +51,52 @@ body { display: flex; flex-direction: column; }
 #panel > .step-card:first-child { border-top: none; }
 
 .col { display: flex; flex-direction: column; }
-#colTitle { position: relative; z-index: 1; width: max-content; max-width: 560px; gap: 6px; }
+/* El texto llega hasta donde termina el panel izquierdo (mismo ancho que #panel) */
+#colTitle {
+  position: relative; z-index: 1; gap: 10px;
+  width: calc(clamp(400px, 38vw, 600px) - 28px - 20px);
+}
 #title {
   white-space: nowrap;
-  font-size: 23px; font-weight: 600; line-height: 1.25; margin: 0;
-  color: var(--accent-strong);
+  font-size: 36px; font-weight: 600; line-height: 1.15; margin: 0;
+  color: #7a1f35; /* burdeo */
 }
-#subtitle { margin: 0; font-size: 12px; line-height: 1.45; color: var(--accent-strong); }
+#subtitle { margin: 0; font-size: 15px; line-height: 1.5; color: #a8566b; /* burdeo más claro */ }
 
-/* Cada paso es una franja de borde a borde del panel:
-   el título arriba y sus controles debajo */
+/* Cada paso es una carpeta: cerrada se ve solo su título;
+   al tocar el título se abre y muestra sus controles (una abierta a la vez) */
 .step-card {
-  /* Los pasos se reparten el alto libre del panel, con su contenido al centro */
+  /* Las carpetas se reparten todo el alto del panel, hasta abajo */
   flex: 1 0 auto;
-  display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 6px;
-  margin: 0 -20px; padding: 8px 20px 10px;
+  display: grid; grid-template-rows: auto 0fr; row-gap: 0;
+  align-content: center;
+  margin: 0 -20px; padding: 12px 20px;
   border-top: 1px solid var(--line);
-  cursor: pointer;
-  transition: background .3s, padding .3s;
+  transition: background .3s, grid-template-rows .3s, row-gap .3s;
 }
-/* Los pasos se ven siempre, pero en chico; el seleccionado a tamaño normal */
-.step-card .step-body { zoom: .6; transition: zoom .3s; }
-.step-card.is-open { padding: 10px 20px 12px; gap: 8px; cursor: default; }
-.step-card.is-open .step-body { zoom: 1; }
-.step-card.is-open .field-label { color: var(--accent-strong); }
-.step-card.is-open .step-num { background: var(--accent-strong); color: #fff; }
-.step-card:focus-within,
-.step-card:hover { background: rgba(79, 127, 111, .08); }
-.step-card:focus-within .field-label { color: var(--accent-strong); }
-.step-card:focus-within .step-num { background: var(--accent-strong); color: #fff; }
+.step-card.is-open { grid-template-rows: auto 1fr; row-gap: 10px; padding-bottom: 14px; align-content: stretch; }
+.step-card .field-label { cursor: pointer; user-select: none; }
+.step-card .field-label::after {
+  content: "›"; margin-left: auto; font-size: 18px; line-height: 1; color: var(--text-dim);
+  transition: transform .3s;
+}
+.step-card.is-open .field-label::after { transform: rotate(90deg); }
+.step-card .step-body { overflow: hidden; min-height: 0; visibility: hidden; transition: visibility .3s; }
+.step-card.is-open .step-body { visibility: visible; }
+.step-card:not(.is-open):hover { background: rgba(79, 127, 111, .08); }
+.step-card.is-open .field-label { color: #c25e7a; }
+.step-card.is-open .step-num { background: #c25e7a; color: #fff; }
+.step-card .field-label:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 4px; border-radius: 3px; }
 
 .field-label {
   display: flex; align-items: center; gap: 8px;
   font-size: 13.5px; font-weight: 600; line-height: 1.2;
-  color: #555;
+  color: #a8566b; /* rosado burdeo */
 }
 .step-num {
   flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--accent-dim); color: var(--accent-text);
+  background: #f2d4dd; color: #7a1f35; /* rosado burdeo */
   font-size: 11px;
   transition: background .3s, color .3s;
 }
@@ -229,6 +236,9 @@ button { font-family: inherit; cursor: pointer; }
 .sw-saturation {
   background: linear-gradient(90deg, #4fa894 0 20%, #6fae9e 20% 40%, #8fb3a9 40% 60%, #aab9b4 60% 80%, #bcc2c0 80%);
 }
+.sw-checker {
+  background: repeating-conic-gradient(#4f7f6f 0 25%, #cfe8df 0 50%) 0 0 / 13px 13px;
+}
 .sw-hue-bright {
   background:
     linear-gradient(90deg, #cfe8df 0 20%, #c4e0e2 20% 40%, #c1d6e6 40% 60%, #c8cfe8 60% 80%, #d4d2e8 80%) top / 100% 50% no-repeat,
@@ -241,7 +251,7 @@ button { font-family: inherit; cursor: pointer; }
 .stage {
   flex: 1; min-width: 0;
   display: flex; align-items: center; justify-content: center;
-  padding: 40px;
+  padding: 56px;
   background: var(--stage);
 }
 /* Recuadro en línea segmentada donde aparece el mosaico */
@@ -261,11 +271,17 @@ button { font-family: inherit; cursor: pointer; }
   transition: opacity .9s ease, transform .9s ease;
 }
 .deco-sq.is-in { opacity: 1; transform: scale(1); }
-#canvas-holder { line-height: 0; }
+#canvas-holder { line-height: 0; position: relative; }
+#canvas-holder canvas { cursor: pointer; }
+/* Recuadro que marca el primer cuadrado tocado, antes de intercambiarlo */
+.tile-sel {
+  position: absolute; pointer-events: none;
+  outline: 3px solid #fff; box-shadow: 0 0 0 5px var(--accent-strong);
+}
 #canvas-holder canvas {
   display: block;
-  max-width: calc(100vw - max(340px, 30vw) - 124px);
-  max-height: calc(100vh - var(--header-h, 100px) - 124px);
+  max-width: calc(100vw - clamp(400px, 38vw, 600px) - 156px);
+  max-height: calc(100vh - var(--header-h, 100px) - 156px);
   box-shadow: 0 20px 50px -25px rgba(60, 100, 85, .35);
   width: auto; height: auto;
 }
@@ -279,6 +295,7 @@ button { font-family: inherit; cursor: pointer; }
   html, body { overflow: auto; height: auto; }
   #app { flex-direction: column; width: 100%; height: auto; }
   #panel { width: 100%; max-width: none; min-width: 0; border-right: none; overflow: visible; }
+  #colTitle { width: auto; }
   .stage { padding: 30px 20px 40px; border-top: 1px solid var(--line); }
   .frame { height: auto; min-height: 60vh; padding: 16px; }
   #canvas-holder canvas { max-width: calc(100vw - 76px); max-height: 75vh; }

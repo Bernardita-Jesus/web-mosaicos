@@ -15,7 +15,7 @@
   <div class="deco" id="deco" aria-hidden="true"></div>
   <div id="colTitle" class="col">
     <h1 id="title">Mosaico fotográfico</h1>
-    <p id="subtitle">Esta web fragmenta y mezcla fotografías para crear una composición en la que sus<br>recortes se reordenan por color en un mosaico.</p>
+    <p id="subtitle">Esta web fragmenta y mezcla fotografías para crear una composición<br>en la que sus recortes se reordenan por color en un mosaico.</p>
   </div>
 </header>
 <!-- Los cuadrados se crean aquí mismo, apenas existe la franja, para que ya estén al cargar -->
@@ -27,7 +27,7 @@
 
     <!-- 1. Fotos -->
     <section class="step-card is-open">
-      <div class="field-label"><span class="step-num">1</span>Fotos</div>
+      <div class="field-label" role="button" tabindex="0"><span class="step-num">1</span>Fotos</div>
       <div class="step-body">
         <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Agregar fotos">
           <span>Arrastra tus fotos aquí o haz clic para elegirlas</span>
@@ -43,7 +43,7 @@
 
     <!-- 2. Formato -->
     <section class="step-card">
-      <div class="field-label"><span class="step-num">2</span>Formato</div>
+      <div class="field-label" role="button" tabindex="0"><span class="step-num">2</span>Formato</div>
       <div class="step-body">
         <div class="formats" id="format" role="radiogroup" aria-label="Formato">
           <label class="fmt" title="Historia / Reel · 1080 × 1920">
@@ -77,7 +77,7 @@
 
     <!-- 3. Recortes -->
     <section class="step-card">
-      <div class="field-label"><span class="step-num">3</span>Recortes</div>
+      <div class="field-label" role="button" tabindex="0"><span class="step-num">3</span>Recortes</div>
       <div class="step-body">
         <div class="field">
           <div id="fixedWControls" class="field">
@@ -118,7 +118,7 @@
 
     <!-- 4. Orden -->
     <section class="step-card">
-      <div class="field-label"><span class="step-num">4</span>Orden</div>
+      <div class="field-label" role="button" tabindex="0"><span class="step-num">4</span>Orden</div>
       <div class="step-body">
         <div class="field">
           <label>Ordenar por</label>
@@ -143,13 +143,19 @@
               <span class="swatch sw-hue-bright"></span>
               <span class="ratio">Tono + brillo</span>
             </label>
+            <label class="fmt sort-opt" title="Ajedrez: las fotos se intercalan sin mover los recortes de su lugar">
+              <input type="radio" name="sort" value="checker">
+              <span class="swatch sw-checker"></span>
+              <span class="ratio">Ajedrez</span>
+            </label>
           </div>
         </div>
-        <div class="field">
+        <div class="field" id="jitterField">
           <label>Aleatoriedad: <span class="rangeval" id="jitterVal">35</span>%</label>
           <input type="range" id="jitter" min="0" max="100" value="35" step="1">
         </div>
         <button class="toggle-btn" id="processBtn" disabled>Mezclar de nuevo</button>
+        <p class="hint">Toca un cuadrado del mosaico y luego otro para intercambiarlos.</p>
       </div>
     </section>
 

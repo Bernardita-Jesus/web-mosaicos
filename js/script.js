@@ -287,18 +287,18 @@ function planLayout(fmt, o, rand) {
     // Por filas: cada fila tiene un alto y se llena de izquierda a derecha.
     const heights = o.varH ? splitExact(fmt.h, o.minH, o.maxH, rand) : repeatExact(fmt.h, o.tileH);
     let y = 0;
-    heights.forEach(h => {
+    heights.forEach((h, r) => {
       const widths = o.varW ? splitExact(fmt.w, o.minW, o.maxW, rand) : repeatExact(fmt.w, o.tileW);
       let x = 0;
-      widths.forEach(w => { slots.push({ x, y, w, h }); x += w; });
+      widths.forEach((w, c) => { slots.push({ x, y, w, h, r, c }); x += w; });
       y += h;
     });
   } else {
     // Ancho fijo y altos variados: por columnas, cada una de arriba a abajo.
     let x = 0;
-    repeatExact(fmt.w, o.tileW).forEach(w => {
+    repeatExact(fmt.w, o.tileW).forEach((w, c) => {
       let y = 0;
-      splitExact(fmt.h, o.minH, o.maxH, rand).forEach(h => { slots.push({ x, y, w, h }); y += h; });
+      splitExact(fmt.h, o.minH, o.maxH, rand).forEach((h, r) => { slots.push({ x, y, w, h, r, c }); y += h; });
       x += w;
     });
   }
@@ -330,6 +330,7 @@ function buildMosaic() {
   if (uploadedImages.length === 0) {
     document.getElementById('canvas-holder').innerHTML = '';
     mosaicCanvas = null;
+    current = null;
     downloadBtn.disabled = true;
     analysisCache = null;
     return;
@@ -406,8 +407,48 @@ function buildMosaic() {
 
   function sortAndRender() {
     if (myId !== buildId) return;
-    const noiseRand = mulberry32(seed ^ 0x9e3779b9);
     const mode = getSortValue();
+    const placed = mode === 'checker' ? placeChecker() : placeByColor(mode);
+
+    const out = document.createElement('canvas');
+    out.width = fmt.w;
+    out.height = fmt.h;
+    const octx = out.getContext('2d');
+    images.forEach((img, i) => {
+      const list = placed.filter(p => p.c.img === i);
+      if (!list.length) return;
+      drawCover(wctx, img, fmt.w, fmt.h);
+      list.forEach(({ c, s }) => {
+        // Copia píxel a píxel: mismo tamaño de origen y destino, sin estirar.
+        octx.drawImage(work, c.sx, c.sy, c.w, c.h, s.x, s.y, s.w, s.h);
+      });
+    });
+    showCanvas(out);
+    current = { fmt, images, placed, octx, wctx };
+
+    imgCount.textContent = images.length + (images.length === 1 ? ' imagen' : ' imágenes') +
+      ' · ' + slots.length + ' recortes · toca una foto para eliminarla';
+    downloadBtn.disabled = false;
+  }
+
+  // Ajedrez: cada espacio toma el recorte del mismo lugar, de una foto distinta
+  // que su vecino (las fotos se van intercalando como en un tablero).
+  function placeChecker() {
+    // "Mezclar de nuevo" cambia qué foto va en qué casilla
+    const order = images.map((_, i) => i);
+    const r = mulberry32(seed ^ 0x51ed270b);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return slots.map((s, j) => {
+      const img = order[(s.r + s.c) % images.length];
+      return { s, c: candidates[img * slots.length + j] };
+    });
+  }
+
+  function placeByColor(mode) {
+    const noiseRand = mulberry32(seed ^ 0x9e3779b9);
     const jitterAmount = parseInt(jitterSlider.value, 10) / 100; // 0..1
 
     // Build a single numeric sort key per mode, then blend in noise scaled
@@ -441,29 +482,7 @@ function buildMosaic() {
     need.forEach((count, k) => queues.set(k, spreadPick(pools.get(k), count)));
 
     // Cada espacio (en orden de lectura) recibe el siguiente recorte de su tamaño.
-    const byImage = images.map(() => []);
-    slots.forEach(s => {
-      const c = queues.get(sizeKey(s.w, s.h)).shift();
-      byImage[c.img].push({ c, s });
-    });
-
-    const out = document.createElement('canvas');
-    out.width = fmt.w;
-    out.height = fmt.h;
-    const octx = out.getContext('2d');
-    byImage.forEach((list, i) => {
-      if (!list.length) return;
-      drawCover(wctx, images[i], fmt.w, fmt.h);
-      list.forEach(({ c, s }) => {
-        // Copia píxel a píxel: mismo tamaño de origen y destino, sin estirar.
-        octx.drawImage(work, c.sx, c.sy, c.w, c.h, s.x, s.y, s.w, s.h);
-      });
-    });
-    showCanvas(out);
-
-    imgCount.textContent = images.length + (images.length === 1 ? ' imagen' : ' imágenes') +
-      ' · ' + slots.length + ' recortes · toca una foto para eliminarla';
-    downloadBtn.disabled = false;
+    return slots.map(s => ({ s, c: queues.get(sizeKey(s.w, s.h)).shift() }));
   }
 
   if (cached) sortAndRender();
@@ -475,15 +494,97 @@ function showCanvas(canvas) {
   holder.innerHTML = '';
   holder.appendChild(canvas);
   mosaicCanvas = canvas;
+  selected = null;
+  canvas.addEventListener('click', onTileClick);
 }
 
-// Pasos: todos se ven en chico; el que tocas se agranda (uno a la vez)
+// ---------- Intercambiar cuadrados a mano ----------
+// Toca un cuadrado (queda marcado) y luego otro: se intercambian.
+// Si tienen distinto tamaño, cada uno se recorta de nuevo desde su foto,
+// centrado en el mismo punto, para que calce sin estirarse.
+
+let current = null;   // lo que está dibujado: { fmt, images, placed, octx, wctx }
+let selected = null;  // índice en current.placed del primer cuadrado tocado
+
+function tileAt(e) {
+  const rect = e.target.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (current.fmt.w / rect.width);
+  const y = (e.clientY - rect.top) * (current.fmt.h / rect.height);
+  return current.placed.findIndex(({ s }) => x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h);
+}
+
+// El mismo recorte, pero del tamaño de otro espacio
+function recrop(c, w, h, fmt) {
+  const cx = c.sx + c.w / 2, cy = c.sy + c.h / 2;
+  return {
+    ...c, w, h,
+    sx: Math.max(0, Math.min(fmt.w - w, Math.round(cx - w / 2))),
+    sy: Math.max(0, Math.min(fmt.h - h, Math.round(cy - h / 2))),
+  };
+}
+
+function drawTile(p) {
+  const { fmt, images, octx, wctx } = current;
+  drawCover(wctx, images[p.c.img], fmt.w, fmt.h);
+  octx.drawImage(wctx.canvas, p.c.sx, p.c.sy, p.c.w, p.c.h, p.s.x, p.s.y, p.s.w, p.s.h);
+}
+
+function markSelected() {
+  const holder = document.getElementById('canvas-holder');
+  let box = holder.querySelector('.tile-sel');
+  if (selected === null) { if (box) box.remove(); return; }
+  if (!box) { box = document.createElement('div'); box.className = 'tile-sel'; holder.appendChild(box); }
+  const k = mosaicCanvas.clientWidth / current.fmt.w;
+  const { s } = current.placed[selected];
+  Object.assign(box.style, {
+    left: s.x * k + 'px', top: s.y * k + 'px', width: s.w * k + 'px', height: s.h * k + 'px',
+  });
+}
+
+function onTileClick(e) {
+  if (!current) return;
+  const i = tileAt(e);
+  if (i === -1) return;
+  if (selected === null || selected === i) {
+    selected = selected === i ? null : i;   // tocar el mismo otra vez lo desmarca
+  } else {
+    const a = current.placed[selected], b = current.placed[i];
+    const ca = a.c, cb = b.c;
+    a.c = recrop(cb, a.s.w, a.s.h, current.fmt);
+    b.c = recrop(ca, b.s.w, b.s.h, current.fmt);
+    drawTile(a);
+    drawTile(b);
+    selected = null;
+  }
+  markSelected();
+}
+window.addEventListener('resize', markSelected);
+
+// En "Ajedrez" la aleatoriedad no se usa: queda semitransparente
+function syncJitter() {
+  const off = getSortValue() === 'checker';
+  document.getElementById('jitterField').classList.toggle('is-off', off);
+  jitterSlider.disabled = off;
+}
+document.querySelectorAll('input[name=sort]').forEach(r => r.addEventListener('change', syncJitter));
+syncJitter();
+
+// Pasos como carpetas: al tocar el título se abre (y se cierran las demás);
+// tocar el título de la abierta la cierra.
 const stepCards = document.querySelectorAll('.step-card');
-const selectStep = card => {
-  if (card.classList.contains('is-open')) return;
-  stepCards.forEach(c => c.classList.toggle('is-open', c === card));
-};
 stepCards.forEach(card => {
-  card.addEventListener('pointerdown', () => selectStep(card));
-  card.addEventListener('focusin', () => selectStep(card));
+  const head = card.querySelector('.field-label');
+  const toggle = () => {
+    const open = !card.classList.contains('is-open');
+    stepCards.forEach(c => {
+      const isIt = c === card && open;
+      c.classList.toggle('is-open', isIt);
+      c.querySelector('.field-label').setAttribute('aria-expanded', isIt);
+    });
+  };
+  head.setAttribute('aria-expanded', card.classList.contains('is-open'));
+  head.addEventListener('click', toggle);
+  head.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
 });
