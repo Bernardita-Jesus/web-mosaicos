@@ -3,9 +3,9 @@
 (function decoSquares() {
   // Cada foto con su color promedio, que se ve mientras la imagen carga
   const PHOTOS = [
-    { src: 'img/000011.jpg', color: '#9b9a86' },
-    { src: 'img/000013.jpg', color: '#4d6e71' },
-    { src: 'img/000019.jpg', color: '#5e655e' },
+    { src: 'recursos/000011.jpg', color: '#9b9a86' },
+    { src: 'recursos/000013.jpg', color: '#4d6e71' },
+    { src: 'recursos/000019.jpg', color: '#5e655e' },
   ];
   const frame = document.getElementById('header');
   const deco = document.getElementById('deco');
@@ -90,11 +90,16 @@
   const setHeaderH = () =>
     document.documentElement.style.setProperty('--header-h', frame.offsetHeight + 'px');
   setHeaderH();
-  // Al cambiar el tamaño de la ventana la grilla cambia: se parte de cero
+  // Si cambia el ancho o el alto de la franja, la grilla cambia: se rearma al
+  // instante (sin quedar vacía). Otros avisos de cambio de tamaño se ignoran.
+  let lastW = frame.clientWidth, lastH = frame.clientHeight;
   window.addEventListener('resize', () => {
     setHeaderH();
+    if (frame.clientWidth === lastW && frame.clientHeight === lastH) return;
+    lastW = frame.clientWidth; lastH = frame.clientHeight;
     squares.forEach(q => q.el.remove());
     squares.length = 0;
+    for (let i = 0; i < 40; i++) spawn(true);
   });
 
   if (reduceMotion) {
