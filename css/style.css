@@ -12,6 +12,11 @@
   --accent-text: #1f3d33;
   --text: #34443d;
   --text-dim: #6f857c;
+  /* Rosados de los botones (misma familia del burdeo del título) */
+  --pink-strong: #c25e7a;
+  --pink: #e3a3b5;
+  --pink-dim: #f2d4dd;
+  --pink-text: #7a1f35;
 }
 
 * { box-sizing: border-box; }
@@ -123,7 +128,7 @@ body { display: flex; flex-direction: column; }
 .hint { margin: 0; font-size: 11px; line-height: 1.4; color: var(--text-dim); }
 .count { font-size: 11px; color: var(--text-dim); }
 
-input[type=range] { width: 100%; accent-color: var(--accent-strong); }
+input[type=range] { width: 100%; accent-color: var(--pink-strong); }
 select {
   width: 100%;
   background: var(--stage); color: var(--text);
@@ -135,48 +140,48 @@ select {
   display: flex; align-items: center; gap: 8px;
   font-size: 12px; color: var(--text) !important; cursor: pointer;
 }
-.checkbox-label input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent-strong); }
+.checkbox-label input { width: 16px; height: 16px; margin: 0; accent-color: var(--pink-strong); }
 
 button { font-family: inherit; cursor: pointer; }
 .primary-btn {
   display: block; width: 100%; text-align: center;
-  padding: 10px 14px; background: var(--accent-strong); color: #fff;
+  padding: 10px 14px; background: var(--pink-strong); color: #fff;
   border: none; border-radius: 5px; font-size: 12px; font-weight: 600;
 }
-.primary-btn:hover:not(:disabled) { background: #3d6658; }
+.primary-btn:hover:not(:disabled) { background: #a84a65; }
 .primary-btn:disabled { opacity: .4; cursor: not-allowed; }
 .toggle-btn {
   padding: 8px 10px;
-  background: var(--accent-dim); border: 1px solid var(--accent-dim);
-  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--accent-text);
+  background: var(--pink-dim); border: 1px solid var(--pink-dim);
+  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--pink-text);
   transition: border-color .15s;
 }
-.toggle-btn:hover:not(:disabled) { border-color: var(--accent-strong); }
+.toggle-btn:hover:not(:disabled) { border-color: var(--pink-strong); }
 .toggle-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------- Subir fotos ---------- */
 .dropzone {
   padding: 10px 12px;
-  text-align: center; font-size: 11px; line-height: 1.4; color: var(--accent-text);
-  background: var(--accent-dim); border: 1px dashed var(--accent);
+  text-align: center; font-size: 11px; line-height: 1.4; color: var(--pink-text);
+  background: var(--pink-dim); border: 1px dashed var(--pink);
   border-radius: 5px;
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
 .dropzone input { display: none; }
-.dropzone:hover, .dropzone.drag { border-color: var(--accent-strong); background: var(--stage); }
-.dropzone:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.dropzone:hover, .dropzone.drag { border-color: var(--pink-strong); background: var(--stage); }
+.dropzone:focus-visible { outline: 2px solid var(--pink-strong); outline-offset: 2px; }
 
 .photos-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .thumbrow { display: contents; } /* las miniaturas siguen al botón en la misma fila */
 .add-btn {
   height: 40px; padding: 0 10px;
-  background: var(--accent-dim); border: 1px solid var(--accent-dim);
-  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--accent-text);
+  background: var(--pink-dim); border: 1px solid var(--pink-dim);
+  border-radius: 5px; font-size: 11px; font-weight: 600; color: var(--pink-text);
   transition: border-color .15s;
 }
-.add-btn:hover { border-color: var(--accent-strong); }
-.add-btn:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.add-btn:hover { border-color: var(--pink-strong); }
+.add-btn:focus-visible { outline: 2px solid var(--pink-strong); outline-offset: 2px; }
 .thumbrow .thumb {
   position: relative; padding: 0; border: 0; background: none;
   border-radius: 3px; line-height: 0;
@@ -190,13 +195,13 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   border-radius: 3px;
-  background: rgba(31, 61, 51, .55); color: #fff;
+  background: rgba(122, 31, 53, .55); color: #fff;
   font-size: 20px; line-height: 1;
   opacity: 0; transition: opacity .15s ease;
 }
 .thumbrow .thumb:hover::after,
 .thumbrow .thumb:focus-visible::after { opacity: 1; }
-.thumbrow .thumb:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thumbrow .thumb:focus-visible { outline: 2px solid var(--pink-strong); outline-offset: 2px; }
 
 /* Formatos como dibujos */
 .formats { display: flex; gap: 6px; }
@@ -215,11 +220,11 @@ button { font-family: inherit; cursor: pointer; }
   transition: border-color .15s, background .15s;
 }
 .fmt .ratio { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-.fmt:hover { border-color: var(--accent-strong); }
-.fmt:has(input:checked) { border-color: var(--accent-strong); background: var(--stage); }
-.fmt:has(input:checked) .shape { border-color: var(--accent-text); background: var(--accent); }
+.fmt:hover { border-color: var(--pink-strong); }
+.fmt:has(input:checked) { border-color: var(--pink-strong); background: var(--stage); }
+.fmt:has(input:checked) .shape { border-color: var(--pink-text); background: var(--pink); }
 .fmt:has(input:checked) .ratio { color: var(--text); }
-.fmt:has(input:focus-visible) { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.fmt:has(input:focus-visible) { outline: 2px solid var(--pink-strong); outline-offset: 2px; }
 
 /* Orden como dibujos: una tirita de recortes con el degradé de cada orden */
 .swatch {
@@ -245,7 +250,7 @@ button { font-family: inherit; cursor: pointer; }
     linear-gradient(90deg, #4f8f7d 0 20%, #427f86 20% 40%, #3f6d8f 40% 60%, #4c5d91 60% 80%, #615b8f 80%) bottom / 100% 50% no-repeat;
 }
 .sort-opt .ratio { white-space: nowrap; }
-.sort-opt:has(input:checked) .swatch { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.sort-opt:has(input:checked) .swatch { outline: 2px solid var(--pink-strong); outline-offset: 2px; }
 
 /* ---------- Lado derecho: el mosaico ---------- */
 .stage {
@@ -276,7 +281,7 @@ button { font-family: inherit; cursor: pointer; }
 /* Recuadro que marca el primer cuadrado tocado, antes de intercambiarlo */
 .tile-sel {
   position: absolute; pointer-events: none;
-  outline: 3px solid #fff; box-shadow: 0 0 0 5px var(--accent-strong);
+  outline: 3px solid #fff; box-shadow: 0 0 0 5px var(--pink-strong);
 }
 #canvas-holder canvas {
   display: block;

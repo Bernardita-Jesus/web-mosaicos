@@ -221,12 +221,51 @@ document.querySelectorAll('#app input, #app select').forEach(el => {
   if (el.type === 'file') return;
   el.addEventListener(el.type === 'range' ? 'input' : 'change', () => scheduleBuild());
 });
+// Guardar: en el teléfono se abre el menú de compartir (ahí está "Guardar
+// imagen" / "Guardar en Fotos"); en el computador se descarga el archivo.
+// La imagen se deja preparada cada vez que el mosaico cambia, porque Safari
+// solo abre el menú si se pide en el mismo instante del toque.
+let mosaicFile = null;
+let fileTimer = null;
+function prepareFile() {
+  mosaicFile = null;
+  clearTimeout(fileTimer);
+  const canvas = mosaicCanvas;
+  if (!canvas) return;
+  fileTimer = setTimeout(() => {
+    canvas.toBlob(blob => {
+      if (blob && canvas === mosaicCanvas) {
+        mosaicFile = new File([blob], 'mosaico-' + lastFormatName + '.png', { type: 'image/png' });
+      }
+    }, 'image/png');
+  }, 150);
+}
+
+function downloadFile(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link); // algunos navegadores lo necesitan en la página
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 downloadBtn.addEventListener('click', () => {
   if (!mosaicCanvas) return;
-  const link = document.createElement('a');
-  link.download = 'mosaico-' + lastFormatName + '.png';
-  link.href = mosaicCanvas.toDataURL('image/png');
-  link.click();
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  const file = mosaicFile;
+  if (file && isTouch && navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: 'Mosaico fotográfico' }).catch(err => {
+      if (err.name !== 'AbortError') downloadFile(file, file.name); // si no se pudo compartir, se descarga
+    });
+    return;
+  }
+  if (file) { downloadFile(file, file.name); return; }
+  // Si la imagen aún no estaba lista, se prepara y se descarga
+  const name = 'mosaico-' + lastFormatName + '.png';
+  mosaicCanvas.toBlob(blob => { if (blob) downloadFile(blob, name); }, 'image/png');
 });
 
 function rgbToHsb(r, g, b) {
@@ -331,6 +370,7 @@ function buildMosaic() {
     document.getElementById('canvas-holder').innerHTML = '';
     mosaicCanvas = null;
     current = null;
+    prepareFile();
     downloadBtn.disabled = true;
     analysisCache = null;
     return;
@@ -424,7 +464,7 @@ function buildMosaic() {
       });
     });
     showCanvas(out);
-    current = { fmt, images, placed, octx, wctx };
+    current = { fmt, images, placed, octx, wctx, mode };
 
     imgCount.textContent = images.length + (images.length === 1 ? ' imagen' : ' imágenes') +
       ' · ' + slots.length + ' recortes · toca una foto para eliminarla';
@@ -496,6 +536,7 @@ function showCanvas(canvas) {
   mosaicCanvas = canvas;
   selected = null;
   canvas.addEventListener('click', onTileClick);
+  prepareFile();
 }
 
 // ---------- Intercambiar cuadrados a mano ----------
@@ -545,6 +586,16 @@ function onTileClick(e) {
   if (!current) return;
   const i = tileAt(e);
   if (i === -1) return;
+
+  // Ajedrez: el cuadrado cambia al recorte del mismo lugar, de la siguiente foto
+  if (current.mode === 'checker') {
+    const p = current.placed[i];
+    const img = (p.c.img + 1) % current.images.length;
+    p.c = { img, sx: p.s.x, sy: p.s.y, w: p.s.w, h: p.s.h };
+    drawTile(p);
+    prepareFile();
+    return;
+  }
   if (selected === null || selected === i) {
     selected = selected === i ? null : i;   // tocar el mismo otra vez lo desmarca
   } else {
@@ -555,6 +606,7 @@ function onTileClick(e) {
     drawTile(a);
     drawTile(b);
     selected = null;
+    prepareFile();
   }
   markSelected();
 }
@@ -565,6 +617,9 @@ function syncJitter() {
   const off = getSortValue() === 'checker';
   document.getElementById('jitterField').classList.toggle('is-off', off);
   jitterSlider.disabled = off;
+  document.getElementById('tapHint').textContent = off
+    ? 'Toca un cuadrado del mosaico para cambiarlo por el mismo recorte de otra foto.'
+    : 'Toca un cuadrado del mosaico y luego otro para intercambiarlos.';
 }
 document.querySelectorAll('input[name=sort]').forEach(r => r.addEventListener('change', syncJitter));
 syncJitter();
